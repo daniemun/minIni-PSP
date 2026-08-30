@@ -1,6 +1,8 @@
 /*  minIni - Multi-Platform INI file parser, suitable for embedded systems
+ *  minIni PSP - A port of minIni for the PlayStation Portable.
  *
  *  Copyright (c) CompuPhase, 2008-2024
+ *  Copyright (c) daniemun,   2026-
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
  *  use this file except in compliance with the License. You may obtain a copy

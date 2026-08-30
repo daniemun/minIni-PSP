@@ -1,4 +1,7 @@
-# minIni
+# minIni PSP
+
+Simple port of minIni for the PlayStation Portable.
+
 minIni is a portable and configurable library for reading and writing ".INI" files. At less than a thousand lines of 
 commented source code, minIni truly is a "mini" INI file parser, especially considering its features.
 

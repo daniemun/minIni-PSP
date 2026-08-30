@@ -1,9 +1,11 @@
 /*  minIni - Multi-Platform INI file parser, suitable for embedded systems
+ *  minIni PSP - A port of minIni for the PlayStation Portable.
  *
  *  These routines are in part based on the article "Multiplatform .INI Files"
  *  by Joseph J. Graf in the March 1994 issue of Dr. Dobb's Journal.
  *
  *  Copyright (c) CompuPhase, 2008-2024
+ *  Copyright (c) daniemun,   2026-
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
  *  use this file except in compliance with the License. You may obtain a copy
@@ -99,6 +101,36 @@ enum quote_option {
   QUOTE_ENQUOTE,
   QUOTE_DEQUOTE,
 };
+
+/* Mimic fgets behavior with PSPSDK functions
+ * Returns the equivalent to: fgets(...) != NULL
+ * Thx go to Freakler for his code: https://github.com/Freakler/CheatDeviceRemastered/blob/d537e30f6fb927cc873e5756c7a4afe07c267c93/source/minIni.c#L96
+ */
+TCHAR *psp_read_fgets(TCHAR *s, size_t n, INI_FILETYPE *stream)
+{
+  if ( n == 0 || s == NULL || stream == NULL ) return NULL;
+
+  int bytes_read = sceIoRead(*stream, s, n - 1);
+
+  /* If nothing was read or it errored out, fgets returns NULL */
+  if ( bytes_read <= 0 ) return NULL;
+
+  /* Read until newline (or until string end if newline isn't found) */
+  int i = 0;
+  while( i < bytes_read )
+  {
+    TCHAR currChar = s[i++];
+    if ( (currChar == '\n') || (currChar == '\r') ) break;
+  }
+
+  s[i] = 0;
+
+  /* If string goes beyond newline, seek back */
+  if ( bytes_read > i )
+    sceIoLseek(*stream, -(bytes_read - i), PSP_SEEK_CUR);
+
+  return s;
+}
 
 #if defined PORTABLE_STRNICMP
 int strnicmp(const TCHAR *s1, const TCHAR *s2, size_t n)
@@ -597,7 +629,7 @@ static void writesection(TCHAR *LocalBuffer, const TCHAR *Section, INI_FILETYPE 
     *p++ = ']';
     _tcscpy(p, INI_LINETERM); /* copy line terminator (typically "\n") */
     if (fp != NULL)
-      (void)ini_write(LocalBuffer, fp);
+      (void)ini_write(LocalBuffer, strlen(LocalBuffer), fp);
   }
 }
 
@@ -614,7 +646,7 @@ static void writekey(TCHAR *LocalBuffer, const TCHAR *Key, const TCHAR *Value, I
   assert(p != NULL);
   _tcscpy(p, INI_LINETERM); /* copy line terminator (typically "\n") */
   if (fp != NULL)
-    (void)ini_write(LocalBuffer, fp);
+    (void)ini_write(LocalBuffer, strlen(LocalBuffer), fp);
 }
 
 static int cache_accum(const TCHAR *string, int *size, int max)
@@ -648,7 +680,7 @@ static int cache_flush(TCHAR *buffer, int *size,
     if (pos == INI_BUFFERSIZE)
       pos--;
     buffer[pos] = '\0'; /* force zero-termination (may be left unterminated in the above while loop) */
-    (void)ini_write(buffer, wfp);
+    (void)ini_write(buffer, strlen(buffer), wfp);
   }
   ini_tell(rfp, mark);  /* update mark */
   *size = 0;
@@ -729,7 +761,7 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
           if (!ini_openrewrite(Filename, &wfp))
             return 0;
           (void)ini_seek(&wfp, &head);
-          (void)ini_write(LocalBuffer, &wfp);
+          (void)ini_write(LocalBuffer, strlen(LocalBuffer), &wfp);
           (void)ini_close(&wfp);
           return 1;
         }
@@ -780,7 +812,7 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
         flag = cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
         if (Key!=NULL && Value!=NULL) {
           if (!flag)
-            (void)ini_write(INI_LINETERM, &wfp);  /* force a new line behind the last line of the INI file */
+            (void)ini_write(INI_LINETERM, sizeof(INI_LINETERM), &wfp);  /* force a new line behind the last line of the INI file */
           writesection(LocalBuffer, Section, &wfp);
           writekey(LocalBuffer, Key, Value, &wfp);
         }
@@ -832,7 +864,7 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
       flag = cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
       if (Key!=NULL && Value!=NULL) {
         if (!flag)
-          (void)ini_write(INI_LINETERM, &wfp);  /* force a new line behind the last line of the INI file */
+          (void)ini_write(INI_LINETERM, sizeof(INI_LINETERM), &wfp);  /* force a new line behind the last line of the INI file */
         writekey(LocalBuffer, Key, Value, &wfp);
       }
       return close_rename(&rfp, &wfp, Filename, LocalBuffer);  /* clean up and rename */

@@ -10,3 +10,5 @@ The C++ class in minIni.h was contributed by Steven Van Ingelgem.
 
 The option to compile minIni as a read-only library was contributed by Luca
 Bassanello.
+
+minIni-PSP is a port of minIni for the PlayStation Portable.

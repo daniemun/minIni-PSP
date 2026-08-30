@@ -1,11 +1,20 @@
 /* Simple test program
- *
- *  gcc -o test test.c minIni.c
  */
+
+#include <pspuser.h>
+#include <pspdebug.h>
+#include <pspdisplay.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include "minIni.h"
+#include <stdbool.h>
+#include "../../src/minIni.h"
+#include "callback.h"
+
+PSP_MODULE_INFO("minIniPSP Test C", PSP_MODULE_USER, 1, 0);
+PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
+
+#define printf pspDebugScreenPrintf
 
 #define sizearray(a)  (sizeof(a) / sizeof((a)[0]))
 
@@ -15,7 +24,7 @@ const char inifile2[] = "testplain.ini";
 int Callback(const char *section, const char *key, const char *value, void *userdata)
 {
   (void)userdata; /* this parameter is not used in this example */
-  printf("    [%s]\t%s=%s\n", section, key, value);
+  printf(" [%s]\t%s=%s\n", section, key, value);
   return 1;
 }
 
@@ -25,6 +34,11 @@ int main(void)
   long n;
   int s, k;
   char section[50];
+
+  setup_callbacks();
+  pspDebugScreenInit();
+
+  sceIoChdir("ms0:/minIniTest");
 
   /* string reading */
   n = ini_gets("first", "string", "dummy", str, sizearray(str), inifile);
@@ -90,7 +104,7 @@ int main(void)
   /* section/key enumeration */
   printf("4. Section/key enumeration, file structure follows\n");
   for (s = 0; ini_getsection(s, section, sizearray(section), inifile) > 0; s++) {
-    printf("    [%s]\n", section);
+    printf(" [%s]\n", section);
     for (k = 0; ini_getkey(section, k, str, sizearray(str), inifile) > 0; k++) {
       printf("\t%s\n", str);
     } /* for */
@@ -118,6 +132,11 @@ int main(void)
   n = ini_puts(NULL, "alt", NULL, inifile2);
   assert(n==1);
   printf("7. String deletion tests passed\n");
+
+  while( true )
+  {
+    sceDisplayWaitVblank();
+  }
 
   return 0;
 }

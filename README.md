@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This project was migrated to [Codeberg](https://codeberg.org/daniemun/minIni-PSP). Further development will continue there.
+
 # minIni PSP
 
 Simple port of minIni for the PlayStation Portable.

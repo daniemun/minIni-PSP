@@ -34,9 +34,11 @@ extern char *psp_read_fgets(char *s, size_t n, INI_FILETYPE *stream);
 #define ini_remove(filename)            ( sceIoRemove((filename)) >= 0 )
 
 #define INI_FILEPOS                     SceOff
-#define ini_tell(file,pos)              ( (*(pos) = sceIoLseek32(*(file), 0, PSP_SEEK_CUR)) >= 0 )
-#define ini_seek(file,pos)              ( (*(pos) = sceIoLseek32(*(file), *(pos), PSP_SEEK_SET)) >= 0 )
+#define ini_tell(file,pos)              (*(pos) = sceIoLseek32(*(file), 0, PSP_SEEK_CUR))
+#define ini_seek(file,pos)              (*(pos) = sceIoLseek32(*(file), *(pos), PSP_SEEK_SET))
 
 #define ini_itoa(string,size,value)     snprintf((string), (size), "%d", (value))
 #define ini_ftoa(string,size,value)     snprintf((string), (size), "%f", (value))
-#define ini_atof(string)                strtof((string), NULL)
+#define ini_atof(string)                atof((string))
+
+#define INI_REAL                        float

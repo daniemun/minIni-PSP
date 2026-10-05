@@ -40,7 +40,8 @@
 #endif
 
 #if !defined __T || defined INI_ANSIONLY
-  #include <ctype.h>
+  // #include <ctype.h>
+  extern int toupper(int ch);
   #include <string.h>
   #include <stdlib.h>
   #define TCHAR     char
@@ -977,7 +978,7 @@ int ini_putl(const TCHAR *Section, const TCHAR *Key, long Value, const TCHAR *Fi
 int ini_putf(const TCHAR *Section, const TCHAR *Key, INI_REAL Value, const TCHAR *Filename)
 {
   TCHAR LocalBuffer[64];
-  ini_ftoa(LocalBuffer, Value);
+  ini_ftoa(LocalBuffer, sizeof(LocalBuffer), Value);
   return ini_puts(Section, Key, LocalBuffer, Filename);
 }
 #endif /* INI_REAL */
